@@ -25,6 +25,7 @@ Resources:
     Type: "AWS::IAM::Policy"
     DependsOn:
       - IoTRole
+      - IoTButtonsClickTopic
     Properties:
       PolicyName: IoTRolePolicy
       Roles:
@@ -35,7 +36,7 @@ Resources:
         - Effect: "Allow"
           Action:
             - "sns:*"
-          Resource: "*"
+          Resource: !Ref IoTButtonsClickTopic
   IoTButtonClickRule:
     Type: "AWS::IoT::TopicRule"
     DependsOn:
@@ -52,7 +53,7 @@ Resources:
           - Sns:
               RoleArn: !GetAtt IoTRole.Arn
               TargetArn: !Ref IoTButtonsClickTopic
-              MessageFormat: JSON
+              MessageFormat: RAW
 
   EventForwarderSubscription:
     Type: "AWS::SNS::Subscription"
