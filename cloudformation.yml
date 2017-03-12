@@ -52,6 +52,7 @@ Resources:
           - Sns:
               RoleArn: !GetAtt IoTRole.Arn
               TargetArn: !Ref IoTButtonsClickTopic
+              MessageFormat: JSON
 
   EventForwarderSubscription:
     Type: "AWS::SNS::Subscription"
