@@ -17,4 +17,4 @@ app.post('/forward-event', function(request, response){
   response.send({'Success': true})
 })
 
-server.listen(8080)
+server.listen(80)

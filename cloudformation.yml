@@ -1,0 +1,63 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
+  EventForwarderUrl:
+    Type: String
+    Description: "URL of the event-forwarder endpoint"
+Resources:
+  IoTButtonsClickTopic:
+    Type: "AWS::SNS::Topic"
+    Properties:
+      DisplayName: IoT Button Clicks Topic
+      TopicName: IoTButtonsClick
+  IoTRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "iot.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+  IoTRolePolicy:
+    Type: "AWS::IAM::Policy"
+    DependsOn:
+      - IoTRole
+    Properties:
+      PolicyName: IoTRolePolicy
+      Roles:
+        - !Ref IoTRole
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Effect: "Allow"
+          Action:
+            - "sns:*"
+          Resource: "*"
+  IoTButtonClickRule:
+    Type: "AWS::IoT::TopicRule"
+    DependsOn:
+      - IoTButtonsClickTopic
+      - IoTRole
+      - IoTRolePolicy
+    Properties:
+      RuleName: IoTButtonClickRule
+      TopicRulePayload:
+        RuleDisabled: "true"
+        Sql: >-
+          SELECT * FROM 'iotbutton/+'
+        Actions:
+          - Sns:
+              RoleArn: !GetAtt IoTRole.Arn
+              TargetArn: !Ref IoTButtonsClickTopic
+
+  EventForwarderSubscription:
+    Type: "AWS::SNS::Subscription"
+    DependsOn:
+      - IoTButtonsClickTopic
+    Properties:
+      Endpoint: !Ref EventForwarderUrl
+      Protocol: http
+      TopicArn: !Ref IoTButtonsClickTopic
